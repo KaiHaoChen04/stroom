@@ -1,0 +1,213 @@
+<%- include('dashboardHeader') -%>
+
+<!-- Main Content -->
+<div class="container">
+    <div class="headline">
+        <h1>Stroom &copy</h1>
+    </div>
+    <!-- Stroom Logo and Navigation Bar -->
+    <img class="pg" src="/static/StroomLogo.png" alt="Error" />
+    <div class="navbar">
+        <!-- Maps Navigation Link -->
+        <li><a href="#" onclick="displayMap()">Maps</a></li>
+        <li><a href="search.html">Search</a></li>
+        <li><a href="#" onclick="displayPostForm()">Create Post</a></li>
+        <li><a href="/route/logout">Log Out</a></li>
+    </div>
+</div>
+
+
+<div class="post-form-container">
+    <h2> Create A Study Sesssion</h2>
+    <form id="post-form" class="post-form" method = 'post' action = '/'>
+      <div class="form-group">
+        <input type="text" id="location" name="location" placeholder="Location" class="form-control">
+      </div>
+      <div class="form-group">
+        <input type="text" id="room" name="room" placeholder="Room" class="form-control">
+      </div>
+      <div class="form-group">
+        <input type="text" id="time" name="time" placeholder="Time" class="form-control">
+      </div>
+      <div class="form-group">
+        <input type="text" id="study-topics" name="studyTopics" placeholder="Study Topics" class="form-control">
+      </div>
+      <div class="form-group">
+        <textarea id="additional-notes" name="additionalNotes" placeholder="Additional Notes" class="form-control"></textarea>
+      </div>
+      <div class="form-group">
+        <input type="text" id="tags" name="tags" placeholder="Tags" class="form-control">
+      </div>
+      <button type="submit" class="btn">Post</button>
+    </form>
+    <div id="posts-container" class="posts-container"></div>
+  </div>
+  <script>
+    // Get form elements
+    const postForm = document.getElementById('post-form');
+    const locationInput = document.getElementById('location');
+    const roomInput = document.getElementById('room');
+    const timeInput = document.getElementById('time');
+    const studyTopicsInput = document.getElementById('study-topics');
+    const additionalNotesInput = document.getElementById('additional-notes');
+    const tagsInput = document.getElementById('tags');
+    const postsContainer = document.getElementById('posts-container');
+
+    // Event listener for form submission
+    postForm.addEventListener('submit', function(event) {
+      event.preventDefault();
+
+      // Get input values
+      const location = locationInput.value;
+      const room = roomInput.value;
+      const time = timeInput.value;
+      const studyTopics = studyTopicsInput.value;
+      const additionalNotes = additionalNotesInput.value;
+      const tags = tagsInput.value;
+
+      // Create new post object
+      const newPost = {
+        location: location,
+        room: room,
+        time: time,
+        studyTopics: studyTopics,
+        additionalNotes: additionalNotes,
+        tags: tags
+      };
+
+      // Display new post
+      const postElement = document.createElement('div');
+      postElement.classList.add('post');
+      postElement.innerHTML = `
+        <strong>${newPost.location}</strong><br />
+        <span>Room: ${newPost.room}</span><br />
+        <span>Time: ${newPost.time}</span><br />
+        <span>Study Topics: ${newPost.studyTopics}</span><br />
+        <span>Additional Notes: ${newPost.additionalNotes}</span><br />
+        <span>Tags: ${newPost.tags}</span>
+      `;
+      postsContainer.appendChild(postElement);
+
+      // Clear form inputs
+      locationInput.value = '';
+      roomInput.value = '';
+      timeInput.value = '';
+      studyTopicsInput.value = '';
+      additionalNotesInput.value = '';
+      tagsInput.value = '';
+    });
+  </script>
+
+
+
+
+
+
+<!-- Google Maps API -->
+<div id="map" style="display: none;"></div>
+<script defer
+src="https://maps.googleapis.com/maps/api/js?key=GOOGLEAPIKEYHERE&callback=initMap">
+</script>
+
+<!-- Main JavaScript File for Map-->
+<!-- <script src="/login_system/map.js"></script> -->
+<script>
+    var map; // Initialize map variable
+
+    // Initialize the map
+    function initMap() {
+    // Grab the user's location
+    x = navigator.geolocation;
+    // If the user's location is successfully grabbed, the success function is called
+    x.getCurrentPosition(success, failure, { enableHighAccuracy: true });
+
+    // Sets the center of the map to be where the user is located
+    function success(position) {
+        // Grab the user's latitude and longitude based on Wifi Access Point
+        var myLat = position.coords.latitude;
+        var myLong = position.coords.longitude;
+
+        // Map center & zoom
+        var options = {
+            center: {lat: myLat, lng: myLong}, // Set map center to user's location
+            zoom: 15, // Default zoom
+            mapId: "7219d2cdaaaa0b81", // Custom map style ID
+            minZoom: 13, // Minimum zoom
+            maxZoomL: 15.1 // Maximum zoom
+        }
+
+        // Create new map
+        map = new google.maps.Map(document.getElementById(`map`),options)
+
+        var coords = {lat: myLat, lng: myLong}; // Initialize coords object with lat and lng properties
+        // Add marker for user's location with custom marker icon and detail window content
+        addMarker({location: {lat: myLat, lng: myLong}, 
+        imageIcon: "https://github.com/PakmanGames/Stroom-Google-Maps-API/blob/main/YouAreHere50x50noBg.png?raw=true", 
+        content: `<h3>You are here!</h3>`});
+    }
+
+    // If the user's location is not successfully grabbed, the failure function is called
+    function failure() {
+        var myLat = 43.66088234260811;
+        var myLong = -79.39609722039485;
+
+        // Map center & zoom
+        var options = {
+            center: {lat: myLat, lng: myLong}, // Set map center to user's location
+            zoom: 15, // Default zoom
+            mapId: "7219d2cdaaaa0b81", // Custom map style ID
+            minZoom: 13, // Minimum zoom
+            maxZoomL: 15.1 // Maximum zoom
+        }
+
+        // Create new map
+        map = new google.maps.Map(document.getElementById(`map`),options)
+
+        var coords = {lat: myLat, lng: myLong}; // Initialize coords object with lat and lng properties
+        // Add marker for default location and create detail window content
+        addMarker({location: {lat: myLat, lng: myLong}, 
+        content: `<h3>Default Location</h3>`});
+    }
+
+    // Add multiple markers with custon icons / content
+    function addMarker(property) {
+        // Create new marker with custom icon and content
+        const marker = new google.maps.Marker({
+        position: property.location,
+        map: map,
+        icon: property.imageIcon
+        }); 
+
+        // If the marker has an icon, set the icon to the custom icon
+        if (property.imageIcon) {
+            marker.setIcon(property.imageIcon);
+        }
+
+        // If the marker has content, create a new detail window with the content
+        const detailWindow = new google.maps.InfoWindow({
+            content: property.content
+        });
+
+        // If the marker is clicked, open the detail window
+        marker.addListener("click", () => {
+            detailWindow.open(map, marker);
+        });
+    }
+    }
+</script>
+
+<!-- Function to display the map -->
+<script>
+    function displayMap() {
+    document.getElementById('map').style.display = 'block';
+    document.getElementsByClassName('post-form-container')[0].style.display = 'none';
+}
+
+function displayPostForm() {
+    document.getElementsByClassName('post-form-container')[0].style.display = 'block';
+    document.getElementById('map').style.display = 'none';
+}
+</script>
+<!-- <script src="/static/dashboard.js"></script> -->
+
+<%- include('dashboardFooter') -%>
